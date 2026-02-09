@@ -126,6 +126,7 @@ function App() {
             </div>
           </div>
         </div>
+      </header>
 
         {/* Mobile Navigation */}
         <div className="md:hidden bg-white border-b">
