@@ -76,19 +76,21 @@ function Alerts() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
               <span className="text-white text-xl">🔔</span>
             </div>
-            <h1 className="text-xl font-bold text-gray-900">Alerts</h1>
+            <h1 className="text-xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
+              Alerts
+            </h1>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-5 py-2.5 rounded-xl hover:from-orange-600 hover:to-red-600 font-medium shadow-md hover:shadow-lg transition-all"
           >
             + Create Alert
           </button>
@@ -97,18 +99,21 @@ function Alerts() {
 
       {/* Alerts List */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6 border-b">
-            <h2 className="text-xl font-bold">Your Alerts</h2>
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div className="p-6 border-b bg-gradient-to-r from-orange-50 to-red-50">
+            <h2 className="text-xl font-bold text-gray-900">Your Alerts</h2>
           </div>
           <div className="p-6">
             {alerts.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                <div className="text-4xl mb-4">🔕</div>
-                <p>No alerts configured</p>
+              <div className="text-center py-16">
+                <div className="text-7xl mb-6">🔕</div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">No alerts configured</h3>
+                <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                  Create alerts to get notified when your APIs go down or slow down. Stay informed and react quickly.
+                </p>
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="mt-4 text-blue-600 hover:text-blue-800 font-medium"
+                  className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-8 py-3 rounded-xl hover:from-orange-600 hover:to-red-600 font-medium shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
                 >
                   Create your first alert
                 </button>
@@ -116,30 +121,41 @@ function Alerts() {
             ) : (
               <div className="space-y-4">
                 {alerts.map((alert) => (
-                  <div key={alert.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                    <div className="flex items-center justify-between">
+                  <div key={alert.id} className="border-2 border-gray-100 rounded-2xl p-5 hover:border-orange-200 hover:bg-orange-50/30 transition-all">
+                    <div className="flex items-center justify-between gap-4">
                       <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${alert.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                            {alert.enabled ? '🔔 Enabled' : '🔕 Disabled'}
-                          </span>
-                          <div>
-                            <h3 className="font-bold text-gray-900">
-                              {alert.type.replace('_', ' ')} Alert
-                            </h3>
+                        <div className="flex items-center gap-4">
+                          <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-3xl ${alert.enabled ? 'bg-green-100' : 'bg-gray-100'}`}>
+                            {alert.enabled ? '🔔' : '🔕'}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-bold text-gray-900 text-lg">
+                                {alert.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                              </h3>
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold ${alert.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                {alert.enabled ? 'Active' : 'Disabled'}
+                              </span>
+                            </div>
                             <p className="text-gray-600 text-sm">
-                              Threshold: {alert.threshold}
+                              Threshold: <span className="font-bold">{alert.threshold}</span>
                             </p>
-                            <p className="text-gray-500 text-sm">
-                              Method: {alert.notificationMethod} • Target: {alert.notificationTarget || 'Not set'}
-                            </p>
+                            <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
+                              <span className="flex items-center gap-1">
+                                <span>📧</span>
+                                <span className="font-medium">{alert.notificationMethod}</span>
+                              </span>
+                              {alert.notificationTarget && (
+                                <span>• {alert.notificationTarget}</span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-6">
                         <div className="text-right">
-                          <div className="text-gray-600 text-sm">
-                            Triggered: {alert.triggeredCount} times
+                          <div className="text-gray-600 text-sm mb-1">
+                            Triggered: <span className="font-bold text-gray-900">{alert.triggeredCount}</span> times
                           </div>
                           <div className="text-gray-500 text-sm">
                             Created: {new Date(alert.createdAt).toLocaleDateString()}
@@ -147,9 +163,11 @@ function Alerts() {
                         </div>
                         <button
                           onClick={() => toggleAlert(alert.id, !alert.enabled)}
-                          className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50"
+                          className={`px-4 py-3 rounded-xl font-medium transition-all ${alert.enabled 
+                            ? 'bg-orange-100 text-orange-600 hover:bg-orange-200' 
+                            : 'bg-green-100 text-green-600 hover:bg-green-200'}`}
                         >
-                          {alert.enabled ? '⏸️' : '▶️'}
+                          {alert.enabled ? '⏸️ Disable' : '▶️ Enable'}
                         </button>
                       </div>
                     </div>
@@ -163,89 +181,92 @@ function Alerts() {
 
       {/* Add Alert Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Create New Alert</h2>
-            <form onSubmit={handleAddAlert}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Endpoint ID
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newAlert.endpointId}
-                    onChange={(e) => setNewAlert({ ...newAlert, endpointId: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2"
-                    placeholder="e.g., 1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Alert Type
-                  </label>
-                  <select
-                    value={newAlert.type}
-                    onChange={(e) => setNewAlert({ ...newAlert, type: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2"
-                  >
-                    <option value="response_time">Response Time</option>
-                    <option value="status_code">Status Code</option>
-                    <option value="uptime">Uptime</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Threshold
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    value={newAlert.threshold}
-                    onChange={(e) => setNewAlert({ ...newAlert, threshold: parseInt(e.target.value) })}
-                    className="w-full border rounded-lg px-3 py-2"
-                    placeholder="e.g., 1000 (ms or %)"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Notification Method
-                  </label>
-                  <select
-                    value={newAlert.notificationMethod}
-                    onChange={(e) => setNewAlert({ ...newAlert, notificationMethod: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2"
-                  >
-                    <option value="email">Email</option>
-                    <option value="slack">Slack</option>
-                    <option value="webhook">Webhook</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Notification Target
-                  </label>
-                  <input
-                    type="text"
-                    value={newAlert.notificationTarget}
-                    onChange={(e) => setNewAlert({ ...newAlert, notificationTarget: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2"
-                    placeholder="e.g., email@example.com or https://hooks.slack.com/..."
-                  />
-                </div>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl transform animate-scale-in">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Create New Alert</h2>
+            <form onSubmit={handleAddAlert} className="space-y-5">
+              <div>
+                <label htmlFor="endpointId" className="block text-sm font-bold text-gray-700 mb-2">
+                  Endpoint ID
+                </label>
+                <input
+                  id="endpointId"
+                  type="text"
+                  required
+                  value={newAlert.endpointId}
+                  onChange={(e) => setNewAlert({ ...newAlert, endpointId: e.target.value })}
+                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all font-mono"
+                  placeholder="e.g., 1"
+                />
               </div>
-              <div className="flex gap-3 mt-6">
+              <div>
+                <label htmlFor="type" className="block text-sm font-bold text-gray-700 mb-2">
+                  Alert Type
+                </label>
+                <select
+                  id="type"
+                  value={newAlert.type}
+                  onChange={(e) => setNewAlert({ ...newAlert, type: e.target.value })}
+                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all font-medium"
+                >
+                  <option value="response_time">Response Time</option>
+                  <option value="status_code">Status Code</option>
+                  <option value="uptime">Uptime</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="threshold" className="block text-sm font-bold text-gray-700 mb-2">
+                  Threshold
+                </label>
+                <input
+                  id="threshold"
+                  type="number"
+                  required
+                  value={newAlert.threshold}
+                  onChange={(e) => setNewAlert({ ...newAlert, threshold: parseInt(e.target.value) })}
+                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                  placeholder="e.g., 1000 (ms or %)"
+                />
+              </div>
+              <div>
+                <label htmlFor="notificationMethod" className="block text-sm font-bold text-gray-700 mb-2">
+                  Notification Method
+                </label>
+                <select
+                  id="notificationMethod"
+                  value={newAlert.notificationMethod}
+                  onChange={(e) => setNewAlert({ ...newAlert, notificationMethod: e.target.value })}
+                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all font-medium"
+                >
+                  <option value="email">Email</option>
+                  <option value="slack">Slack</option>
+                  <option value="webhook">Webhook</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="notificationTarget" className="block text-sm font-bold text-gray-700 mb-2">
+                  Notification Target
+                </label>
+                <input
+                  id="notificationTarget"
+                  type="text"
+                  value={newAlert.notificationTarget}
+                  onChange={(e) => setNewAlert({ ...newAlert, notificationTarget: e.target.value })}
+                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                  placeholder="e.g., email@example.com or https://hooks.slack.com/..."
+                />
+              </div>
+              <div className="flex gap-3 mt-8">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50"
+                  className="flex-1 border-2 border-gray-200 text-gray-700 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                  className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-3 rounded-xl hover:from-orange-600 hover:to-red-600 font-medium shadow-md hover:shadow-lg transition-all"
                 >
                   Create Alert
                 </button>
