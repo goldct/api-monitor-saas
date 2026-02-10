@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useAuth } from './context/AuthContext';
 
 const API_BASE_URL = 'http://localhost:3000';
 
@@ -43,7 +44,7 @@ function Dashboard() {
 
   const fetchStats = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/monitor/stats/${user.id}`);
+      const response = await axios.get(`${API_BASE_URL}/monitor/stats/${user.id}`);
       if (response.data.success) {
         setStats(response.data.data);
       }

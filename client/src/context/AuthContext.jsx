@@ -1,40 +1,18 @@
 import { useState, useEffect, createContext, useContext } from 'react';
-import { createClient } from '@supabase/supabase-js';
 
-// Supabase client
-const supabase = createClient(
-  'https://rvxrnipztylzroufvyan.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZCI6InJ4eHVidGxsbiJ2dGUiYW4iZXhzdGxlbWFuIiwicm9sZSI6ImlhdCI6MTc3MDExMTA0MTA0NDgxMywiZXhwIjoxNzAwMTA0MTAyMDg0MzIiLCJwY2I6IjAzZDE1NTAxMTAxNTAwMCI3NzIwMDEwMDEwOTUwMCIsInYwYiI6IjRjNGQ5NTEwMDE1NTgwNHNzInNV1YiI6ImF3ZGRqZWNyT2I1NzAxMDgyNTUzMy40c3hnYzQ1MWUwMDcwNjJkZWIyMjB3MHoxNzAwMTAwMTIwODg0MzIiLCJpZCI6IjAzZDk1NTAxMTAxNTAwMCI3NzIwMDEwMDEwOTUwMCIsInYwYiI6IjRjNGQ1NTEwMDE1NTYwMHNzInNV1YiI6ImF3ZGRqZWNyT2I1NzAxMDgyNTUzMy40c3hnYzQ1MWUwMDcwNjJkZWIyMjB3MHoxNzAwMTAwMTIwODg0MzIiLCJwY2I6IjRjNGQ5NTEwMDE1NTYwMHNzInNV1YiI6ImF3ZGRqZWNyT2I1NzAxMDgyNTUzMy40c3hnYzQ1MWUwMDcwNjJkZWIyMjB3MHoxNzAwMTAwMTIwODg0MzIi'
-);
-
-// Auth context
+// Demo auth context (in-memory, no database required)
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Check session
-    const initAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          const { data: userData } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          setUser(userData);
-        }
-      } catch (error) {
-        console.error('Init auth error:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initAuth();
+    // Check localStorage for demo user
+    const savedUser = localStorage.getItem('demo_user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
   }, []);
 
   const value = {
@@ -44,21 +22,18 @@ export const AuthProvider = ({ children }) => {
     login: async (email, password) => {
       setLoading(true);
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
+        // Demo login - accept any email/password
+        const demoUser = {
+          id: 'demo_user_' + Date.now(),
+          email: email,
+          full_name: email.split('@')[0],
+          plan: 'free',
+          created_at: new Date().toISOString()
+        };
 
-        if (error) throw error;
-
-        const { data: userData } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', data.user.id)
-          .single();
-
-        setUser(userData);
-        return { success: true, data: userData };
+        setUser(demoUser);
+        localStorage.setItem('demo_user', JSON.stringify(demoUser));
+        return { success: true, data: demoUser };
       } catch (error) {
         return { success: false, error: error.message };
       } finally {
@@ -68,26 +43,18 @@ export const AuthProvider = ({ children }) => {
     signup: async (email, password, fullName) => {
       setLoading(true);
       try {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              full_name: fullName
-            }
-          }
-        });
+        // Demo signup - accept any input
+        const demoUser = {
+          id: 'demo_user_' + Date.now(),
+          email: email,
+          full_name: fullName || email.split('@')[0],
+          plan: 'free',
+          created_at: new Date().toISOString()
+        };
 
-        if (error) throw error;
-
-        const { data: userData } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', data.user.id)
-          .single();
-
-        setUser(userData);
-        return { success: true, data: userData };
+        setUser(demoUser);
+        localStorage.setItem('demo_user', JSON.stringify(demoUser));
+        return { success: true, data: demoUser };
       } catch (error) {
         return { success: false, error: error.message };
       } finally {
@@ -97,8 +64,8 @@ export const AuthProvider = ({ children }) => {
     logout: async () => {
       setLoading(true);
       try {
-        await supabase.auth.signOut();
         setUser(null);
+        localStorage.removeItem('demo_user');
       } finally {
         setLoading(false);
       }

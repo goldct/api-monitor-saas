@@ -7,7 +7,7 @@ import Login from './Login';
 import Signup from './Signup';
 
 function App() {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const [currentView, setCurrentView] = useState('dashboard');
 
   // Redirect to login if not authenticated
@@ -115,8 +115,7 @@ function App() {
               </button>
               <button
                 onClick={async () => {
-                  const auth = useAuth();
-                  await auth.logout();
+                  await logout();
                   setCurrentView('dashboard');
                 }}
                 className="text-gray-600 hover:text-gray-900 text-sm"
