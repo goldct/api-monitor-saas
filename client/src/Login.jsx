@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useAuth } from './context/AuthContext';
 
-function Login({ onLogin }) {
+function Login() {
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -12,29 +14,14 @@ function Login({ onLogin }) {
     setError('');
 
     try {
-      // For MVP, use simple authentication
-      // In production, this would call Supabase auth
-      const response = await fetch('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        localStorage.setItem('userId', data.data.userId);
-        localStorage.setItem('token', data.data.token);
-        onLogin(data.data);
+      const result = await login(email, password);
+      if (result.success) {
+        // AuthContext handles state update
       } else {
-        setError(data.error || 'Login failed');
+        setError(result.error || 'Login failed');
       }
     } catch (err) {
-      // For MVP, allow any login
-      const userId = email || 'demo-user';
-      localStorage.setItem('userId', userId);
-      localStorage.setItem('token', 'demo-token');
-      onLogin({ userId, email });
+      setError('Login failed. Please try again.');
     } finally {
       setLoading(false);
     }

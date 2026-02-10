@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useAuth } from './context/AuthContext';
 
-function Signup({ onSignup }) {
+function Signup() {
+  const { signup } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -30,20 +32,12 @@ function Signup({ onSignup }) {
     setLoading(true);
 
     try {
-      // For MVP, create user without backend
-      const userId = `user-${Date.now()}`;
-      const token = `demo-token-${userId}`;
-
-      localStorage.setItem('userId', userId);
-      localStorage.setItem('token', token);
-      localStorage.setItem('userName', formData.name);
-
-      onSignup({
-        userId,
-        email: formData.email,
-        name: formData.name,
-        token
-      });
+      const result = await signup(formData.email, formData.password, formData.name);
+      if (result.success) {
+        // AuthContext handles state update
+      } else {
+        setError(result.error || 'Failed to create account');
+      }
     } catch (err) {
       setError('Failed to create account');
     } finally {
