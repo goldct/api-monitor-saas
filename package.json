@@ -1,13 +1,14 @@
 {
   "name": "api-monitor-saas",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "API Monitor SaaS - Monitor your APIs with ease",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "build": "cd client && npm install && npm run build"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["api", "monitor", "saas", "monitoring"],
+  "author": "ProfitBot",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
