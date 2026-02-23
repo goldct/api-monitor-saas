@@ -57,10 +57,13 @@ export const AuthProvider = ({ children }) => {
         if (!data.success) return { success: false, error: data.error || 'Signup failed' };
 
         const u = { id: data.data.id, email: data.data.email, full_name: data.data.full_name, plan: data.data.plan || 'free' };
-        localStorage.setItem(storageKeys.user, JSON.stringify(u));
-        if (data.data.access_token) localStorage.setItem(storageKeys.token, data.data.access_token);
-        setUser(u);
-        return { success: true, data: u };
+        if (data.data.access_token) {
+          localStorage.setItem(storageKeys.user, JSON.stringify(u));
+          localStorage.setItem(storageKeys.token, data.data.access_token);
+          setUser(u);
+          return { success: true, data: u };
+        }
+        return { success: true, data: u, needsLogin: true };
       } catch (e) {
         return { success: false, error: e.message };
       } finally {
@@ -71,6 +74,20 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem(storageKeys.user);
       localStorage.removeItem(storageKeys.token);
       setUser(null);
+    },
+    refreshUser: async (userId) => {
+      if (!userId) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/users/${userId}`);
+        const data = await res.json();
+        if (data.success && data.data) {
+          const u = { id: data.data.id, email: data.data.email, full_name: data.data.full_name, plan: data.data.plan || 'free' };
+          localStorage.setItem(storageKeys.user, JSON.stringify(u));
+          setUser(u);
+        }
+      } catch (e) {
+        console.error('Refresh user error:', e);
+      }
     },
   };
 

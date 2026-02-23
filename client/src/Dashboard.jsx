@@ -15,12 +15,24 @@ function Dashboard() {
   });
   const [toast, setToast] = useState(null);
 
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
 
   useEffect(() => {
-    fetchEndpoints();
-    fetchStats();
-  }, []);
+    if (user?.id) {
+      fetchEndpoints();
+      fetchStats();
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('upgraded') === '1' && user?.id) {
+      refreshUser(user.id);
+      setToast({ message: 'Upgrade successful! Your plan has been updated.', type: 'success' });
+      setTimeout(() => setToast(null), 5000);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [user?.id]);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -28,6 +40,7 @@ function Dashboard() {
   };
 
   const fetchEndpoints = async () => {
+    if (!user?.id) return;
     try {
       const response = await axios.get(`${API_BASE}/api/endpoints/${user.id}`);
       if (response.data.success) {
@@ -42,6 +55,7 @@ function Dashboard() {
   };
 
   const fetchStats = async () => {
+    if (!user?.id) return;
     try {
       const response = await axios.get(`${API_BASE}/api/monitor/stats/${user.id}`);
       if (response.data.success) {

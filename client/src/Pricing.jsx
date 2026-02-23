@@ -62,6 +62,10 @@ function Pricing() {
   };
 
   const handleUpgrade = async (plan) => {
+    if (!user?.id) {
+      alert('Please sign in to upgrade');
+      return;
+    }
     try {
       const res = await fetch(`${API_BASE}/api/create-checkout-session`, {
         method: 'POST',
@@ -164,7 +168,7 @@ function Pricing() {
                     : 'border-2 border-black text-black hover:bg-black hover:text-white'
                 }`}
               >
-                {plan.name === 'Free' ? 'Get Started Free' : 'Start Free Trial'}
+                {plan.name === 'Free' ? 'Get Started Free' : (user ? 'Start Free Trial' : 'Sign in to Upgrade')}
               </button>
             </div>
           ))}

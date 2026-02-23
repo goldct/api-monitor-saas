@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from './context/AuthContext';
 
-function Signup() {
+function Signup({ onSwitchToLogin }) {
   const { signup } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
@@ -34,7 +34,10 @@ function Signup() {
     try {
       const result = await signup(formData.email, formData.password, formData.name);
       if (result.success) {
-        // AuthContext handles state update
+        if (result.needsLogin && onSwitchToLogin) {
+          setError('');
+          onSwitchToLogin();
+        }
       } else {
         setError(result.error || 'Failed to create account');
       }

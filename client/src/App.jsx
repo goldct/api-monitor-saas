@@ -141,7 +141,7 @@ function App() {
         {(currentView === 'login' || currentView === 'signup') && (
           <div className="max-w-6xl mx-auto px-6 py-12">
             {currentView === 'login' && <Login />}
-            {currentView === 'signup' && <Signup />}
+            {currentView === 'signup' && <Signup onSwitchToLogin={() => setCurrentView('login')} />}
           </div>
         )}
 

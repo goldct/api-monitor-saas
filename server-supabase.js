@@ -17,6 +17,43 @@ app.use(cors({
   origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
   credentials: true
 }));
+
+// Stripe webhook MUST use raw body - route before express.json()
+app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) return res.status(503).json({ error: 'Webhook not configured' });
+  let event;
+  try {
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+  } catch (e) {
+    return res.status(400).json({ error: e.message });
+  }
+  try {
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+      const userId = session.metadata?.userId || session.client_reference_id;
+      const plan = (session.metadata?.plan || 'pro').toLowerCase();
+      if (userId) {
+        await supabase.from('users').update({ plan }).eq('id', userId);
+        console.log(`[STRIPE] Upgraded user ${userId} to ${plan}`);
+      }
+    } else if (event.type === 'customer.subscription.deleted') {
+      const sub = event.data.object;
+      const { data: row } = await supabase.from('subscriptions').select('user_id').eq('stripe_subscription_id', sub.id).single();
+      if (row) {
+        await supabase.from('users').update({ plan: 'free' }).eq('id', row.user_id);
+        console.log(`[STRIPE] Downgraded user ${row.user_id} to free`);
+      }
+    }
+    res.json({ received: true });
+  } catch (e) {
+    console.error('Webhook error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.use(express.json());
 
 // ===============================
@@ -530,7 +567,7 @@ app.put('/api/alert/:alertId', async (req, res) => {
 });
 
 // ===============================
-// STRIPE CHECKOUT
+// STRIPE CHECKOUT + WEBHOOK
 // ===============================
 app.post('/api/create-checkout-session', async (req, res) => {
   try {
@@ -855,6 +892,21 @@ async function startMonitoring() {
     console.error('Monitoring error:', error);
   }
 }
+
+// Vercel Cron: GET /api/cron/check - called by Vercel Cron every minute
+app.get('/api/cron/check', async (req, res) => {
+  const secret = process.env.CRON_SECRET;
+  if (secret && req.headers.authorization !== `Bearer ${secret}` && req.query.secret !== secret) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  try {
+    await startMonitoring();
+    res.json({ success: true, message: 'Monitoring cycle completed' });
+  } catch (e) {
+    console.error('Cron error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // Start monitoring cron job (run every minute) - only when not in Vercel serverless
 if (!process.env.VERCEL) {
