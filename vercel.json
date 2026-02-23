@@ -1,0 +1,13 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "client/dist",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api" },
+    { "source": "/health", "destination": "/api" }
+  ],
+  "env": {
+    "NODE_ENV": "production",
+    "SUPABASE_URL": "https://rvxrnipztylzroufvyan.supabase.co",
+    "SUPABASE_ANON_KEY": "sb_publishable_IpqoDXQ6GBUtQt65KwlHlg_swGyQJyV"
+  }
+}
