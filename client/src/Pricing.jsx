@@ -1,6 +1,9 @@
 import { useState } from 'react';
+import { useAuth } from './context/AuthContext';
+import { API_BASE } from './config';
 
 function Pricing() {
+  const { user } = useAuth();
   const [billingCycle, setBillingCycle] = useState('monthly');
 
   const plans = [
@@ -56,6 +59,21 @@ function Pricing() {
   const getYearlySavings = (price) => {
     const monthly = price.monthly * 12;
     return ((monthly - price.yearly) / monthly * 100).toFixed(0);
+  };
+
+  const handleUpgrade = async (plan) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/create-checkout-session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan, userId: user?.id, successUrl: window.location.origin + '/dashboard?upgraded=1', cancelUrl: window.location.origin + '/pricing' }),
+      });
+      const data = await res.json();
+      if (data.success && data.url) window.location.href = data.url;
+      else alert(data.error || 'Could not start checkout');
+    } catch (e) {
+      alert(e.message || 'Checkout failed');
+    }
   };
 
   return (
@@ -139,6 +157,7 @@ function Pricing() {
               </ul>
 
               <button
+                onClick={plan.name !== 'Free' ? () => handleUpgrade(plan.name.toLowerCase()) : undefined}
                 className={`w-full py-3.5 rounded-xl font-bold transition-all ${
                   plan.popular
                     ? 'bg-black text-white hover:bg-gray-800'

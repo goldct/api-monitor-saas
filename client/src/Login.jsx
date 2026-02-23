@@ -104,12 +104,6 @@ function Login() {
             </p>
           </div>
 
-          {/* Demo Notice */}
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-800 text-sm">
-              <strong>Demo Mode:</strong> Enter any email and password to try the app
-            </p>
-          </div>
         </div>
       </div>
     </div>

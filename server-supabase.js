@@ -87,7 +87,10 @@ app.post('/api/auth/signup', async (req, res) => {
 
     res.status(201).json({
       success: true,
-      data: userData,
+      data: {
+        ...userData,
+        access_token: newUser.session?.access_token || null,
+      },
       message: 'User created successfully'
     });
   } catch (error) {
@@ -178,6 +181,8 @@ app.get('/api/endpoints/:userId', async (req, res) => {
   }
 });
 
+const PLAN_LIMITS = { free: 3, pro: 10, team: 50 };
+
 // Add a new endpoint
 app.post('/api/endpoints', async (req, res) => {
   try {
@@ -188,6 +193,18 @@ app.post('/api/endpoints', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Missing required fields: userId, url, name'
+      });
+    }
+
+    // Check plan limit
+    const { data: userRow } = await supabase.from('users').select('plan').eq('id', userId).single();
+    const plan = userRow?.plan || 'free';
+    const limit = PLAN_LIMITS[plan] ?? 3;
+    const { count } = await supabase.from('endpoints').select('*', { count: 'exact', head: true }).eq('user_id', userId);
+    if (count >= limit) {
+      return res.status(403).json({
+        success: false,
+        error: `Plan limit reached (${limit} endpoints). Upgrade at /pricing`,
       });
     }
 
@@ -509,6 +526,36 @@ app.put('/api/alert/:alertId', async (req, res) => {
       success: false,
       error: error.message
     });
+  }
+});
+
+// ===============================
+// STRIPE CHECKOUT
+// ===============================
+app.post('/api/create-checkout-session', async (req, res) => {
+  try {
+    const { plan, userId, successUrl, cancelUrl } = req.body;
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.status(503).json({ success: false, error: 'Payments not configured. Add STRIPE_SECRET_KEY to enable.' });
+    }
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    const prices = { pro: { monthly: 900, yearly: 8600 }, team: { monthly: 2900, yearly: 27800 } };
+    const p = prices[plan];
+    if (!p) return res.status(400).json({ success: false, error: 'Invalid plan' });
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'subscription',
+      line_items: [{ price_data: { currency: 'usd', product_data: { name: `API Monitor ${plan}` }, unit_amount: p.monthly, recurring: { interval: 'month' } }, quantity: 1 }],
+      success_url: successUrl || `${req.headers.origin || 'https://api-monitor-clean.vercel.app'}/dashboard?upgraded=1`,
+      cancel_url: cancelUrl || `${req.headers.origin || 'https://api-monitor-clean.vercel.app'}/pricing`,
+      client_reference_id: userId,
+      metadata: { plan, userId },
+    });
+    res.json({ success: true, url: session.url });
+  } catch (e) {
+    console.error('Stripe error:', e);
+    res.status(500).json({ success: false, error: e.message });
   }
 });
 

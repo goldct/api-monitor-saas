@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from './context/AuthContext';
-
-const API_BASE_URL = 'http://localhost:3000';
+import { API_BASE } from './config';
 
 function Dashboard() {
   const [endpoints, setEndpoints] = useState([]);
@@ -30,7 +29,7 @@ function Dashboard() {
 
   const fetchEndpoints = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/endpoints/${user.id}`);
+      const response = await axios.get(`${API_BASE}/api/endpoints/${user.id}`);
       if (response.data.success) {
         setEndpoints(response.data.data);
       }
@@ -44,7 +43,7 @@ function Dashboard() {
 
   const fetchStats = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/monitor/stats/${user.id}`);
+      const response = await axios.get(`${API_BASE}/api/monitor/stats/${user.id}`);
       if (response.data.success) {
         setStats(response.data.data);
       }
@@ -56,7 +55,7 @@ function Dashboard() {
   const handleAddEndpoint = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/endpoints`, {
+      const response = await axios.post(`${API_BASE}/api/endpoints`, {
         userId: user.id,
         url: newEndpoint.url,
         name: newEndpoint.name,
@@ -79,7 +78,7 @@ function Dashboard() {
 
   const handleDeleteEndpoint = async (id) => {
     try {
-      await axios.delete(`${API_BASE_URL}/api/endpoints/${id}`);
+      await axios.delete(`${API_BASE}/api/endpoints/${id}`);
       setEndpoints(endpoints.filter(ep => ep.id !== id));
       fetchStats();
       showToast('Endpoint deleted successfully');

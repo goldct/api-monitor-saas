@@ -162,12 +162,6 @@ function Signup() {
             </p>
           </div>
 
-          {/* Demo Notice */}
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-800 text-sm">
-              <strong>Demo Mode:</strong> No email verification required for MVP
-            </p>
-          </div>
         </div>
       </div>
     </div>

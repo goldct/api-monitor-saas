@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from './context/AuthContext';
+import { API_BASE } from './config';
 
 function Alerts() {
+  const { user } = useAuth();
   const [alerts, setAlerts] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newAlert, setNewAlert] = useState({
@@ -12,13 +15,13 @@ function Alerts() {
   });
 
   useEffect(() => {
-    fetchAlerts();
-  }, []);
+    if (user?.id) fetchAlerts();
+  }, [user?.id]);
 
   const fetchAlerts = async () => {
+    if (!user?.id) return;
     try {
-      const userId = localStorage.getItem('userId') || 'demo-user';
-      const response = await fetch(`http://localhost:3000/alert/${userId}`);
+      const response = await fetch(`${API_BASE}/api/alert/${user.id}`);
       const data = await response.json();
       if (data.success) {
         setAlerts(data.data);
@@ -30,13 +33,13 @@ function Alerts() {
 
   const handleAddAlert = async (e) => {
     e.preventDefault();
+    if (!user?.id) return;
     try {
-      const userId = localStorage.getItem('userId') || 'demo-user';
-      const response = await fetch('http://localhost:3000/alert', {
+      const response = await fetch(`${API_BASE}/api/alert`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId,
+          userId: user.id,
           endpointId: newAlert.endpointId,
           type: newAlert.type,
           threshold: newAlert.threshold,
@@ -64,7 +67,7 @@ function Alerts() {
 
   const toggleAlert = async (alertId, enabled) => {
     try {
-      await fetch(`http://localhost:3000/alert/${alertId}`, {
+      await fetch(`${API_BASE}/api/alert/${alertId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ enabled })
