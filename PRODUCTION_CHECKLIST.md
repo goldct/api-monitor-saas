@@ -20,8 +20,8 @@
 
 ## 监控 Cron
 
-- **Vercel Hobby**：当前为每小时执行 (`0 * * * *`)。若需每分钟检查，可使用 [cron-job.org](https://cron-job.org) 免费版，每分钟 GET 你的 `/api/cron/check`，并在 Vercel 设置 `CRON_SECRET` 作为 query 参数保护。
-- **Vercel Pro**：可将 `vercel.json` 中 schedule 改为 `* * * * *` 实现每分钟检查。
+- **Vercel Hobby**：仅支持每日一次，当前为每日 0 点 UTC (`0 0 * * *`)。**若要实现每分钟/每小时检查**，使用 [cron-job.org](https://cron-job.org) 免费版：创建 Cron Job，URL 填 `https://api-monitor-clean.vercel.app/api/cron/check?secret=你的CRON_SECRET`，间隔 1 或 5 分钟。
+- **Vercel Pro**：可将 schedule 改为 `* * * * *` 或 `0 * * * *` 实现更频繁检查。
 
 ## 投产前自测
 
