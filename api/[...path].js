@@ -14,8 +14,9 @@ const apiRoutes = require('../src/routes/api');
 const monitorRoutes = require('../src/routes/monitor');
 const alertRoutes = require('../src/routes/alert');
 
+// Vercel routes - paths are already prefixed by Vercel's [...path].js
 app.use('/health', healthRoutes);
-app.use('/api', apiRoutes);
+app.use('/endpoints', apiRoutes);
 app.use('/monitor', monitorRoutes);
 app.use('/alert', alertRoutes);
 
