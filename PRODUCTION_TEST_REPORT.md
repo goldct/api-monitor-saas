@@ -75,9 +75,9 @@
 | GET | `/api/endpoints/:userId` | ✅ Working |
 | POST | `/api/endpoints` | ✅ Working |
 | DELETE | `/api/endpoints/:id` | ⏳ To test |
-| POST | `/alert` | ⏳ To test |
-| GET | `/alert/:userId` | ⏳ To test |
-| GET | `/monitor/stats/:endpointId` | ⏳ To test |
+| POST | `/alert` | ⏳ Issue (timeout) |
+| GET | `/alert/:userId` | ✅ Working |
+| GET | `/monitor/stats/:userId` | ✅ Working |
 
 ---
 
