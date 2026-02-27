@@ -19,10 +19,7 @@ app.use('/api', apiRoutes);
 app.use('/monitor', monitorRoutes);
 app.use('/alert', alertRoutes);
 
-// Start monitoring (runs in background)
-const { startMonitoring } = require('../src/utils/monitor');
-// Note: cron doesn't work well in serverless, so we'll skip it for Vercel
-// startMonitoring();
-
 // Vercel Serverless Function handler
-module.exports = app;
+module.exports = (req, res) => {
+  app(req, res);
+};
