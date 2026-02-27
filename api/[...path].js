@@ -8,15 +8,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// Routes - keep the full paths
 const healthRoutes = require('../src/routes/health');
 const apiRoutes = require('../src/routes/api');
 const monitorRoutes = require('../src/routes/monitor');
 const alertRoutes = require('../src/routes/alert');
 
-// Vercel routes - paths are already prefixed by Vercel's [...path].js
 app.use('/health', healthRoutes);
-app.use('/endpoints', apiRoutes);
+app.use('/api', apiRoutes);
 app.use('/monitor', monitorRoutes);
 app.use('/alert', alertRoutes);
 
