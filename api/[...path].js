@@ -20,6 +20,4 @@ app.use('/monitor', monitorRoutes);
 app.use('/alert', alertRoutes);
 
 // Vercel Serverless Function handler
-module.exports = (req, res) => {
-  app(req, res);
-};
+module.exports = app;
