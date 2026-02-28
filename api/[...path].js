@@ -8,13 +8,28 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Debug logging
+app.use((req, res, next) => {
+  console.log('Request:', req.method, req.path, req.url);
+  next();
+});
+
 // In-memory storage
 let endpoints = [];
 let alerts = [];
 let monitors = [];
 
-// Health check
+// Health check - support both /health and /api/health
 app.get('/health', (req, res) => {
+  res.json({
+    success: true,
+    message: 'API Monitor - Health Check',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
+app.get('/api/health', (req, res) => {
   res.json({
     success: true,
     message: 'API Monitor - Health Check',
@@ -41,13 +56,42 @@ app.post('/endpoints', (req, res) => {
   res.json({ success: true, data: endpoint });
 });
 
+app.post('/api/endpoints', (req, res) => {
+  const { userId, url, name, method } = req.body;
+  if (!userId || !url || !name) {
+    return res.status(400).json({ success: false, error: 'Missing required fields: userId, url, name' });
+  }
+  const endpoint = {
+    id: Date.now(),
+    userId,
+    url,
+    name,
+    method: method || 'GET',
+    createdAt: new Date().toISOString()
+  };
+  endpoints.push(endpoint);
+  res.json({ success: true, data: endpoint });
+});
+
 app.get('/endpoints/:userId', (req, res) => {
   const { userId } = req.params;
   const userEndpoints = endpoints.filter(e => e.userId === userId);
   res.json({ success: true, data: userEndpoints });
 });
 
+app.get('/api/endpoints/:userId', (req, res) => {
+  const { userId } = req.params;
+  const userEndpoints = endpoints.filter(e => e.userId === userId);
+  res.json({ success: true, data: userEndpoints });
+});
+
 app.delete('/endpoints/:id', (req, res) => {
+  const { id } = req.params;
+  endpoints = endpoints.filter(e => e.id !== parseInt(id));
+  res.json({ success: true });
+});
+
+app.delete('/api/endpoints/:id', (req, res) => {
   const { id } = req.params;
   endpoints = endpoints.filter(e => e.id !== parseInt(id));
   res.json({ success: true });
@@ -69,6 +113,21 @@ app.get('/monitor/stats/:userId', (req, res) => {
   res.json({ success: true, data: stats });
 });
 
+app.get('/api/monitor/stats/:userId', (req, res) => {
+  const { userId } = req.params;
+  const userEndpoints = endpoints.filter(e => e.userId === userId);
+  const stats = {
+    totalEndpoints: userEndpoints.length,
+    totalChecks: monitors.length,
+    successfulChecks: monitors.filter(m => m.status === 'success').length,
+    failedChecks: monitors.filter(m => m.status === 'failed').length,
+    avgResponseTime: monitors.length > 0
+      ? monitors.reduce((sum, m) => sum + m.responseTime, 0) / monitors.length
+      : 0
+  };
+  res.json({ success: true, data: stats });
+});
+
 // Alert endpoints
 app.get('/alert/:userId', (req, res) => {
   const { userId } = req.params;
@@ -76,7 +135,34 @@ app.get('/alert/:userId', (req, res) => {
   res.json({ success: true, data: userAlerts });
 });
 
+app.get('/api/alert/:userId', (req, res) => {
+  const { userId } = req.params;
+  const userAlerts = alerts.filter(a => a.userId === userId);
+  res.json({ success: true, data: userAlerts });
+});
+
 app.post('/alert', (req, res) => {
+  const { userId, endpointId, type, threshold, notificationMethod, notificationTarget } = req.body;
+  if (!userId || !endpointId || !type || !threshold || !notificationMethod) {
+    return res.status(400).json({ success: false, error: 'Missing required fields' });
+  }
+  const alert = {
+    id: Date.now(),
+    userId,
+    endpointId,
+    type,
+    threshold,
+    notificationMethod,
+    notificationTarget: notificationTarget || '',
+    enabled: true,
+    triggeredCount: 0,
+    createdAt: new Date().toISOString()
+  };
+  alerts.push(alert);
+  res.json({ success: true, data: alert });
+});
+
+app.post('/api/alert', (req, res) => {
   const { userId, endpointId, type, threshold, notificationMethod, notificationTarget } = req.body;
   if (!userId || !endpointId || !type || !threshold || !notificationMethod) {
     return res.status(400).json({ success: false, error: 'Missing required fields' });
@@ -110,7 +196,26 @@ app.put('/alert/:id', (req, res) => {
   res.json({ success: true, data: alert });
 });
 
+app.put('/api/alert/:id', (req, res) => {
+  const { id } = req.params;
+  const { enabled } = req.body;
+  const alert = alerts.find(a => a.id === parseInt(id));
+  if (!alert) {
+    return res.status(404).json({ success: false, error: 'Alert not found' });
+  }
+  if (typeof enabled === 'boolean') {
+    alert.enabled = enabled;
+  }
+  res.json({ success: true, data: alert });
+});
+
 app.delete('/alert/:id', (req, res) => {
+  const { id } = req.params;
+  alerts = alerts.filter(a => a.id !== parseInt(id));
+  res.json({ success: true });
+});
+
+app.delete('/api/alert/:id', (req, res) => {
   const { id } = req.params;
   alerts = alerts.filter(a => a.id !== parseInt(id));
   res.json({ success: true });
