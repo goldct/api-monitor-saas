@@ -8,20 +8,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Debug middleware
-app.use((req, res, next) => {
-  console.log('Request received:', req.method, req.path, req.url);
-  next();
-});
-
-// Routes - keep the full paths
+// Routes
 const healthRoutes = require('../src/routes/health');
 const apiRoutes = require('../src/routes/api');
 const monitorRoutes = require('../src/routes/monitor');
 const alertRoutes = require('../src/routes/alert');
 
+// Vercel strips /api prefix, so we mount routes without it
 app.use('/health', healthRoutes);
-app.use('/api', apiRoutes);
+app.use('/endpoints', apiRoutes);
 app.use('/monitor', monitorRoutes);
 app.use('/alert', alertRoutes);
 
