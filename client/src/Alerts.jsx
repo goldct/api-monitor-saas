@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || window.location.origin;
+
 function Alerts() {
   const [alerts, setAlerts] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -18,7 +20,7 @@ function Alerts() {
   const fetchAlerts = async () => {
     try {
       const userId = localStorage.getItem('userId') || 'demo-user';
-      const response = await fetch(`http://localhost:3000/alert/${userId}`);
+      const response = await fetch(`${API_BASE_URL}/api/alert/${userId}`);
       const data = await response.json();
       if (data.success) {
         setAlerts(data.data);
@@ -32,7 +34,7 @@ function Alerts() {
     e.preventDefault();
     try {
       const userId = localStorage.getItem('userId') || 'demo-user';
-      const response = await fetch('http://localhost:3000/alert', {
+      const response = await fetch(`${API_BASE_URL}/api/alert`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -64,7 +66,7 @@ function Alerts() {
 
   const toggleAlert = async (alertId, enabled) => {
     try {
-      await fetch(`http://localhost:3000/alert/${alertId}`, {
+      await fetch(`${API_BASE_URL}/api/alert/${alertId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ enabled })
