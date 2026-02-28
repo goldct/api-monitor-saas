@@ -4,22 +4,6 @@
   "framework": null,
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/[...path]"
-    },
-    {
-      "source": "/health",
-      "destination": "/api/[...path]"
-    },
-    {
-      "source": "/monitor/(.*)",
-      "destination": "/api/[...path]"
-    },
-    {
-      "source": "/alert/(.*)",
-      "destination": "/api/[...path]"
-    },
-    {
       "source": "/(.*)",
       "destination": "/client/dist/$1"
     }
