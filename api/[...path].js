@@ -221,5 +221,17 @@ app.delete('/api/alert/:id', (req, res) => {
   res.json({ success: true });
 });
 
+// Catch-all for debugging
+app.use((req, res) => {
+  console.log('No route matched:', req.method, req.path, req.url);
+  res.status(404).json({
+    error: 'No route matched',
+    method: req.method,
+    path: req.path,
+    url: req.url,
+    originalUrl: req.originalUrl
+  });
+});
+
 // Vercel Serverless Function handler
 module.exports = app;
