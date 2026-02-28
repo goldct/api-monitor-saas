@@ -8,22 +8,34 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Routes - keep the full paths
-const healthRoutes = require('../src/routes/health');
-const apiRoutes = require('../src/routes/api');
-const monitorRoutes = require('../src/routes/monitor');
-const alertRoutes = require('../src/routes/alert');
+// Import controllers
+const { addApiEndpoint, getApiEndpoints, deleteApiEndpoint } = require('../src/controllers/apiController');
+const { getStats } = require('../src/controllers/monitorController');
+const { createAlert, getAlerts, updateAlert, deleteAlert } = require('../src/controllers/alertController');
 
-// Vercel routes full path including /api to the handler
-// So we mount routes at their expected full paths
-app.use('/health', healthRoutes);
-app.use('/api', apiRoutes);
-app.use('/api/monitor', monitorRoutes);
-app.use('/api/alert', alertRoutes);
+// Health check
+app.get('/health', (req, res) => {
+  res.json({
+    success: true,
+    message: 'API Monitor - Health Check',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
 
-// Also handle paths without /api prefix for backward compatibility
-app.use('/monitor', monitorRoutes);
-app.use('/alert', alertRoutes);
+// API endpoints
+app.post('/endpoints', addApiEndpoint);
+app.get('/endpoints/:userId', getApiEndpoints);
+app.delete('/endpoints/:id', deleteApiEndpoint);
+
+// Monitor endpoints
+app.get('/monitor/stats/:userId', getStats);
+
+// Alert endpoints
+app.get('/alert/:userId', getAlerts);
+app.post('/alert', createAlert);
+app.put('/alert/:id', updateAlert);
+app.delete('/alert/:id', deleteAlert);
 
 // Vercel Serverless Function handler
 module.exports = app;
