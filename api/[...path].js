@@ -8,6 +8,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Debug middleware
+app.use((req, res, next) => {
+  console.log('Request received:', req.method, req.path, req.url);
+  next();
+});
+
 // Routes - keep the full paths
 const healthRoutes = require('../src/routes/health');
 const apiRoutes = require('../src/routes/api');
